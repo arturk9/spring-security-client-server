@@ -17,4 +17,10 @@ public record HttpApiController(LogProcessor logProcessor) {
                 .push(Flux.just(logs))
                 .then(Mono.just(new ResponseEntity<>(HttpStatus.OK)));
     }
+
+    @PostMapping("/helloworldnoctx")
+    public Mono<ResponseEntity<Void>> helloWorldnoctx(Model logs, ServerWebExchange exchange) {
+        logProcessor.push(Flux.just(logs)).subscribe();
+        return Mono.just(new ResponseEntity<>(HttpStatus.OK));
+    }
 }

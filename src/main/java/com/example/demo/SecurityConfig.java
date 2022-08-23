@@ -22,6 +22,7 @@ public class SecurityConfig {
                         contentSecurityPolicy
                                 .policyDirectives("default-src 'none'; script-src 'none'; object-src 'none'; base-uri 'none'; require-trusted-types-for 'script';")))
                 .authorizeExchange (it -> it.pathMatchers("/helloworld").access(AuthorityReactiveAuthorizationManager.hasAuthority("SCOPE_myscope")))
+                .authorizeExchange (it -> it.pathMatchers("/helloworldnoctx").access(AuthorityReactiveAuthorizationManager.hasAuthority("SCOPE_myscope")))
                 .oauth2ResourceServer(ServerHttpSecurity.OAuth2ResourceServerSpec::jwt);
 
         return http.build();

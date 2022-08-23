@@ -71,6 +71,37 @@ class DemoApplicationTests {
 		assert statusCode.value() == 200;
 	}
 
+	@Test
+	void inconsistencyWhenSideEffect() {
+		var registration = ClientRegistration
+				.withRegistrationId("clientRegistrationId")
+				.tokenUri(ExternalAuthServiceMock.oauth2Uri)
+				.clientId("correctScope")
+				.clientSecret("secret")
+				.authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+				.build();
+
+		var clientRegistration = new InMemoryReactiveClientRegistrationRepository(registration);
+
+		var clientService = new InMemoryReactiveOAuth2AuthorizedClientService(clientRegistration);
+		var authorizedClientManager =
+				new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(clientRegistration, clientService);
+
+		var oauth = new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+		oauth.setDefaultClientRegistrationId("clientRegistrationId");
+
+		var statusCode = WebClient.builder()
+				.baseUrl(String.format("http://127.0.0.1:%s/helloworldnoctx", appPort))
+				.filter(oauth)
+				.build()
+				.post()
+				.bodyValue(new Model("name", 18))
+				.exchangeToMono(response -> Mono.just(response.statusCode()))
+				.block();
+
+		assert statusCode.value() == 200;
+	}
+
 	private static final ExternalAuthServiceMock externalAuthServiceMock = new ExternalAuthServiceMock();
 
 	@DynamicPropertySource
